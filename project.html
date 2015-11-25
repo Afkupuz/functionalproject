@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery UI Droppable - Shopping Cart Demo</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <style>
+  #userCustom {
+      width: 90%;
+      overflow: auto;
+  }
+  #notebook ol {
+      min-height: 50px;
+  }
+  h1 { 
+      padding: .2em; margin: 0;
+  }
+  h2 {
+      margin: 30px 0 0 0
+    }
+  fieldset {
+      border: 0;
+    }
+  label {
+      display: block;
+    }
+  select {
+      width: 200px;
+    }
+ 
+    /* select with custom icons */
+    .ui-selectmenu-menu .ui-menu.customicons .ui-menu-hover{
+        background: red;
+    }
+    .ui-selectmenu-menu .ui-menu.customicons .ui-menu-item {
+      padding: 0.5em 0 0.5em 3em;
+    }
+    .ui-selectmenu-menu .ui-menu.customicons .ui-menu-item .ui-icon {
+      height: 24px;
+      width: 24px;
+      top: 0.1em;
+    }
+    .ui-icon.black {
+      background: black;
+    }
+    .ui-icon.red {
+      background: #dfbf9f;
+    }
+    .ui-icon.white {
+      background: white;
+    }
+    .ui-icon.purple {
+      background: #002699;
+    }
+    .ui-icon.green {
+      background: green;
+    }
+  </style>
+  <script>
+  
+  $(function() {
+    $.widget( "custom.iconselectmenu", $.ui.selectmenu, {
+      _renderItem: function( ul, item ) {
+        var li = $( "<li>", { text: item.label } );
+ 
+        if ( item.disabled ) {
+          li.addClass( "ui-state-disabled" );
+        }
+ 
+        $( "<span>", {
+          style: item.element.attr( "data-style" ),
+          "class": "ui-icon " + item.element.attr( "data-class" )
+        })
+          .appendTo( li );
+ 
+        return li.appendTo( ul );
+      }
+    });
+ 
+    $( "#backgroundSelect" )
+      .iconselectmenu({
+       change: function( event, ui ) {
+           //var x = ui.item.element.context.className;
+           console.log(ui.item);
+         $(document.body).css( "background", ui.item.value );
+         //if (data.item.value == "black"){
+            //$(document.body).append("<p>"+x+"</p>");
+            $(document.body).css( "color", ui.item.element.context.className ); 
+         //};
+         
+       }
+     })
+      .iconselectmenu( "menuWidget" )
+        .addClass( "ui-menu-icons customicons" );
+  });
+  
+  $(function() {
+    
+    $( "strong" ).draggable({
+      appendTo: "body",
+      helper: "clone"
+    });
+    $( "#notebook ol" ).droppable({
+      activeClass: "ui-state-default",
+      hoverClass: "ui-state-hover",
+      accept: ":not(.ui-sortable-helper)",
+      drop: function( event, ui ) {
+        //remove placeholder
+        $( this ).find( ".placeholder" ).remove();
+        //provide default text
+        var note = "notes";
+        var title = "title";
+        switch(ui.draggable.text()){
+            case "Variables":
+                title = ui.draggable.text();
+                note = '"These are objects that you define."';
+                break;
+            case "If/Else":
+                title = ui.draggable.text();
+                note = '"Customize workflow"';
+                break;
+            case "For Loop":
+                title = ui.draggable.text();
+                note = '"Repeat actions X times"';
+                break;
+            default:
+                title = ui.draggable.text();
+                note = '"default"';
+            
+        }
+        $('<li id="noted">'+title+': <input type="text" id="userCustom" value='+note+' class="stuff"><button value="one" onclick="setText(this.parentNode.val())">Save</button></input></li>').resizable().appendTo( this );
+        //$('#userCustom').resizable();
+      }
+    }).sortable({
+      items: "li:not(.placeholder)",
+      //out: function(event, ui) { ui.item.remove() },
+      sort: function(event, ui) {
+        // gets added unintentionally by droppable interacting with sortable
+        // using connectWithSortable fixes this, but doesn't allow you to customize active/hoverClass options
+        $( this ).removeClass( "ui-state-default" );
+        
+      }
+      
+    });
+    $('#trash').droppable({
+        accept:"#noted",
+        drop: function(event, ui) {
+            ui.draggable.remove();
+        }
+    });
+  });
+  function setText(v){
+      //var label = $(this).parent().siblings().find('input').val();
+      //var numRos = v.closest('input').text();
+      //var numRos = v.parent().find('.stuff').val();
+      //var x = $(this).parentNode.nodeName;
+      //var x = $('#userCustom').val()
+      $(document.body).append(v+"stuff");
+  }
+  </script>
+</head>
+<body>
+
+  <h2>Choose a background color!</h2>
+  <fieldset>
+    <label for="backgroundSelect">Select a color:</label>
+    <select name="backgroundSelect" id="backgroundSelect">
+      <option value="white" data-class="white">Black on White</option>
+      <option value="black" class="white" data-class="black" >White on black</option>
+      <option value="#dfbf9f" data-class="red">Black on Sepia</option>
+      <option value="#003300" class="#53ff1a" data-class="green">Console</option>
+      <option value="#002699" class="white" data-class="purple">Ocean Breeze</option>
+    </select>
+  </fieldset>
+ 
+<div>
+    Javascript is an amazing language that lets you do all kinds of fun and interesting things.
+    <br>
+    <strong>Variables</strong>: These are objects that you define.
+    <br>
+    <strong>If/Else</strong>: Statements that allow customizable. workflow
+    <br>
+    <strong>For Loop</strong>: Repeat action x times
+</div>
+<div id="notebook">
+  <h1 class="ui-widget-header">Notebook</h1>
+  <div class="ui-widget-content">
+    <ol>
+      <li class="placeholder">Add your items here</li>
+    </ol>
+  </div>
+
+
+<div id="trash" class="ui-widget-header">
+    <p>Trash notes here</p>
+</div>
+</div>
+ 
+ 
+</body>
+</html>
